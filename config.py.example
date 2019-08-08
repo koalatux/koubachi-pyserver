@@ -1,0 +1,35 @@
+devices = {
+    '001122334455': {
+        'key': "00112233445566778899aabbccddeeff",
+        'config': "transmit_interval=55202&"
+                  "transmit_app_led=1&"
+                  "sensor_app_led=0&"
+                  "day_threshold=10.0&"
+                  "sensor_enabled[7]=1&"
+                  "sensor_polling_interval[7]=3600&"
+                  "sensor_enabled[8194]=1&"
+                  "sensor_enabled[8195]=1&"
+                  "sensor_enabled[8]=1&"
+                  "sensor_polling_interval[8]=3600&"
+                  "sensor_enabled[2]=1&"
+                  "sensor_polling_interval[2]=86400&"
+                  "sensor_enabled[1]=0&"
+                  "sensor_polling_interval[1]=3600&"
+                  "sensor_enabled[8193]=0&"
+                  "sensor_enabled[8192]=1&"
+                  "sensor_enabled[4116]=1&"
+                  "sensor_enabled[4115]=1&"
+                  "sensor_enabled[4114]=1&"
+                  "sensor_enabled[4113]=1&"
+                  "sensor_enabled[4112]=1&"
+                  "sensor_enabled[12]=1&"
+                  "sensor_enabled[4128]=0&"
+                  "sensor_enabled[9]=1&"
+                  "sensor_enabled[11]=1&"
+                  "sensor_enabled[6]=1&"
+                  "sensor_enabled[10]=1&"
+                  "sensor_polling_interval[10]=18000&"
+                  "sensor_enabled[4096]=0",
+        'last_config_change': 1565297221,
+    }
+}
