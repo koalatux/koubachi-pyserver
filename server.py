@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import time
+import json
 from http.server import BaseHTTPRequestHandler
 from flask import Flask, request, Response
 from koubachi_crypto import decrypt, encrypt
@@ -52,6 +53,7 @@ def get_config(mac_address):
 def add_readings(mac_address):
     key = get_device_key(mac_address)
     body = decrypt(key, request.get_data())
+    body = json.loads(body.replace(b"'", b'"'))
     print(body)
     response = f"current_time={int(time.time())}&last_config_change={get_device_last_config_change(mac_address)}"
     print(response)
