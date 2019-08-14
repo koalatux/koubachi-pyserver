@@ -1,8 +1,9 @@
-def convert_lm94022_temperature(x, calibration_temperature_offset):
-    return 453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2) - calibration_temperature_offset
+def convert_lm94022_temperature(x, calibration_parameters):
+    return (453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2)
+            - calibration_parameters['LM94022_TEMPERATURE_OFFSET'])
 
 
-def convert_soil_moisture(x):
+def convert_soil_moisture(x, _calibration_parameters):
     x = (8.130159393183e-018 * x ** 5
          - 0.000000000000259586800701037 * x ** 4
          + 0.00000000328783014726288 * x ** 3
@@ -12,7 +13,7 @@ def convert_soil_moisture(x):
     return 100 * 10 ** max(0, min(6, x))
 
 
-def convert_tsl2561_light(x):
+def convert_tsl2561_light(x, _calibration_parameters):
     x = int(x)
     data0 = (x >> 16) & 0xfffe
     data1 = x & 0xfffe
@@ -39,16 +40,16 @@ def convert_tsl2561_light(x):
 # We are configuring all sensors, the device will ignore unavailable sensors
 # Sensor Type ID: (type, enabled, polling interval, conversion function)
 SENSORS = {
-    1: ("board temperature", False, 3600, lambda x: x),
-    2: ("battery voltage", True, 86400, lambda x: x),
-    6: ("button", True, None, lambda x: x / 1000),
+    1: ("board temperature", False, 3600, lambda x, _: x),
+    2: ("battery voltage", True, 86400, lambda x, _: x),
+    6: ("button", True, None, lambda x, _: x / 1000),
     7: ("temperature", True, 3600, convert_lm94022_temperature),
-    8: ("light", True, 3600, lambda x: 3333326.67 * ((abs(x) + x) / 2)),
-    9: ("rssi", True, None, lambda x: x),
+    8: ("light", True, 3600, lambda x, _: 3333326.67 * ((abs(x) + x) / 2)),
+    9: ("rssi", True, None, lambda x, _: x),
     10: ("soil sensors trigger", True, 18000, None),
-    11: ("soil temperature", True, None, lambda x: x),
+    11: ("soil temperature", True, None, lambda x, _: x),
     12: ("soil moisture", True, None, convert_soil_moisture),
-    15: ("temperature", True, 3600, lambda x: -46.85 + 175.72 * x / 2 ** 16),
+    15: ("temperature", True, 3600, lambda x, _: -46.85 + 175.72 * x / 2 ** 16),
     29: ("light", True, 3600, convert_tsl2561_light),
     # statistics
     4096: ("", False, None, None),
