@@ -30,7 +30,7 @@ def get_device_config(_mac_address):
         "day_threshold": 10.0,
     }
     cfg.update({f"sensor_enabled[{k}]": int(v[1]) for k, v in SENSORS.items()})
-    cfg.update({f"sensor_polling_interval[{k}]": v[2] for k, v in SENSORS.items() if v[1]})
+    cfg.update({f"sensor_polling_interval[{k}]": v[2] for k, v in SENSORS.items() if v[1] and v[2] is not None})
     return "&".join([f"{k}={v}" for k, v in cfg.items()])
 
 
