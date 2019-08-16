@@ -1,16 +1,28 @@
 def convert_lm94022_temperature(x, calibration_parameters):
-    return (453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2)
-            - calibration_parameters['LM94022_TEMPERATURE_OFFSET'])
+    x = (x - calibration_parameters['RN171_SMU_DC_OFFSET']) * calibration_parameters['RN171_SMU_GAIN'] * 3.0
+    x = (453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2)
+         - calibration_parameters['LM94022_TEMPERATURE_OFFSET'])
+    return x
 
 
-def convert_soil_moisture(x, _calibration_parameters):
+def convert_sfh3710_light(x, calibration_parameters):
+    x = ((x - calibration_parameters['SFH3710_DC_OFFSET_CORRECTION'])
+         * calibration_parameters['RN171_SMU_GAIN'] / 20.0 * 7.2)
+    x = 3333326.67 * ((abs(x) + x) / 2)
+    return x
+
+
+def convert_soil_moisture(x, calibration_parameters):
+    x = ((x - calibration_parameters['SOIL_MOISTURE_MIN'])
+         * ((8778.25 - 3515.25) / (calibration_parameters['SOIL_MOISTURE_DISCONTINUITY']
+                                   - calibration_parameters['SOIL_MOISTURE_MIN'])) + 3515.25)
     x = (8.130159393183e-018 * x ** 5
          - 0.000000000000259586800701037 * x ** 4
          + 0.00000000328783014726288 * x ** 3
          - 0.0000206371829755294 * x ** 2
          + 0.0646453707101697 * x
          - 79.7740602786336)
-    return 100 * 10 ** max(0, min(6, x))
+    return max(0, min(6, x))
 
 
 def convert_tsl2561_light(x, _calibration_parameters):
@@ -26,15 +38,16 @@ def convert_tsl2561_light(x, _calibration_parameters):
         data0 *= 1 / 0.252
         data1 *= 1 / 0.252
     if data0 == 0 or data1 / data0 > 1.30:
-        return 0.0
+        y = 0.0
     elif data1 / data0 > 0.8:
-        return 0.00146 * data0 - 0.00112 * data1
+        y = 0.00146 * data0 - 0.00112 * data1
     elif data1 / data0 > 0.61:
-        return 0.0128 * data0 - 0.0153 * data1
+        y = 0.0128 * data0 - 0.0153 * data1
     elif data1 / data0 > 0.50:
-        return 0.0224 * data0 - 0.031 * data1
+        y = 0.0224 * data0 - 0.031 * data1
     else:
-        return 0.0304 * data0 - 0.062 * data0 * (data1 / data0) ** 1.4
+        y = 0.0304 * data0 - 0.062 * data0 * (data1 / data0) ** 1.4
+    return y * 5.0
 
 
 # We are configuring all sensors, the device will ignore unavailable sensors
@@ -44,10 +57,10 @@ SENSORS = {
     2: ("battery voltage", True, 86400, lambda x, _: x),
     6: ("button", True, None, lambda x, _: x / 1000),
     7: ("temperature", True, 3600, convert_lm94022_temperature),
-    8: ("light", True, 3600, lambda x, _: 3333326.67 * ((abs(x) + x) / 2)),
+    8: ("light", True, 3600, convert_sfh3710_light),
     9: ("rssi", True, None, lambda x, _: x),
     10: ("soil sensors trigger", True, 18000, None),
-    11: ("soil temperature", True, None, lambda x, _: x),
+    11: ("soil temperature", True, None, lambda x, _: x - 2.5),
     12: ("soil moisture", True, None, convert_soil_moisture),
     15: ("temperature", True, 3600, lambda x, _: -46.85 + 175.72 * x / 2 ** 16),
     29: ("light", True, 3600, convert_tsl2561_light),
