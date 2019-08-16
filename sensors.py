@@ -53,15 +53,15 @@ def convert_tsl2561_light(x, _calibration_parameters):
 # We are configuring all sensors, the device will ignore unavailable sensors
 # Sensor Type ID: (type, enabled, polling interval, conversion function)
 SENSORS = {
-    1: ("board temperature", False, 3600, lambda x, _: x),
-    2: ("battery voltage", True, 86400, lambda x, _: x),
+    1: ("board_temperature", False, 3600, lambda x, _: x),
+    2: ("battery_voltage", True, 86400, lambda x, _: x),
     6: ("button", True, None, lambda x, _: x / 1000),
     7: ("temperature", True, 3600, convert_lm94022_temperature),
     8: ("light", True, 3600, convert_sfh3710_light),
     9: ("rssi", True, None, lambda x, _: x),
-    10: ("soil sensors trigger", True, 18000, None),
-    11: ("soil temperature", True, None, lambda x, _: x - 2.5),
-    12: ("soil moisture", True, None, convert_soil_moisture),
+    10: ("soil_sensors_trigger", True, 18000, None),
+    11: ("soil_temperature", True, None, lambda x, _: x - 2.5),
+    12: ("soil_moisture", True, None, convert_soil_moisture),
     15: ("temperature", True, 3600, lambda x, _: -46.85 + 175.72 * x / 2 ** 16),
     29: ("light", True, 3600, convert_tsl2561_light),
     # statistics

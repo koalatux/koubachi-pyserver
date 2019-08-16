@@ -22,6 +22,10 @@ def get_device_key(mac_address):
     return bytes.fromhex(config.devices[mac_address]['key'])
 
 
+def get_device_calibration_parameters(mac_address):
+    return config.devices[mac_address]['calibration_parameters']
+
+
 def get_device_config(_mac_address):
     cfg = {
         "transmit_interval": 55202,
@@ -39,17 +43,26 @@ def get_device_last_config_change(_mac_address):
 
 
 def post_readings(mac_address, body):
+    calibration_parameters = get_device_calibration_parameters(mac_address)
     readings = []
     for reading in body['readings']:
         ts, sensor_type_id, value_raw = reading
         sensor_type = SENSORS.get(sensor_type_id, (None, False))
         if sensor_type[1]:
+            if sensor_type[3] is None:
+                value = None
+            else:
+                value = sensor_type[3](value_raw, calibration_parameters)
             readings.append({
                 'ts': ts * 1000,
-                'values': {SENSORS[sensor_type_id][0]: value_raw}
+                'values': {
+                    sensor_type[0] + '_raw': value_raw,
+                    sensor_type[0]: value
+                }
             })
-    payload = {mac_address: readings}
-    publish.single(config.MQTT_TOPIC, json.dumps(payload), hostname=config.MQTT_HOST, auth=config.MQTT_AUTH)
+    if readings:
+        payload = {mac_address: readings}
+        publish.single(config.MQTT_TOPIC, json.dumps(payload), hostname=config.MQTT_HOST, auth=config.MQTT_AUTH)
 
 
 @app.route('/v1/smart_devices/<mac_address>', methods=['PUT'])
