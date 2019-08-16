@@ -1,7 +1,7 @@
 def convert_lm94022_temperature(x, calibration_parameters):
     x = (x - calibration_parameters['RN171_SMU_DC_OFFSET']) * calibration_parameters['RN171_SMU_GAIN'] * 3.0
     x = (453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2)
-         - calibration_parameters['LM94022_TEMPERATURE_OFFSET'])
+         - calibration_parameters['LM94022_TEMPERATURE_OFFSET'] - 273.15)
     return x
 
 
