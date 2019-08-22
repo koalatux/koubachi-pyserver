@@ -2,12 +2,12 @@
 
 import time
 import json
+import yaml
 from http.server import BaseHTTPRequestHandler
 from flask import Flask, request, Response
 import paho.mqtt.publish as publish
 from koubachi_crypto import decrypt, encrypt
 
-import config
 from sensors import SENSORS
 
 # The sensor only accepts HTTP/1.1
@@ -19,11 +19,11 @@ app = Flask(__name__)
 
 
 def get_device_key(mac_address):
-    return bytes.fromhex(config.devices[mac_address]['key'])
+    return bytes.fromhex(app.config['devices'][mac_address]['key'])
 
 
 def get_device_calibration_parameters(mac_address):
-    return config.devices[mac_address]['calibration_parameters']
+    return app.config['devices'][mac_address]['calibration_parameters']
 
 
 def get_device_config(_mac_address):
@@ -39,6 +39,7 @@ def get_device_config(_mac_address):
 
 
 def get_device_last_config_change(_mac_address):
+    # TODO
     return 1565643961
 
 
@@ -62,7 +63,9 @@ def post_readings(mac_address, body):
             })
     if readings:
         payload = {mac_address: readings}
-        publish.single(config.MQTT_TOPIC, json.dumps(payload), hostname=config.MQTT_HOST, auth=config.MQTT_AUTH)
+        # TODO
+        print(payload)
+        # publish.single(app.config.MQTT_TOPIC, json.dumps(payload), hostname=app.config.MQTT_HOST, auth=app.config.MQTT_AUTH)
 
 
 @app.route('/v1/smart_devices/<mac_address>', methods=['PUT'])
@@ -95,4 +98,8 @@ def add_readings(mac_address):
 
 
 if __name__ == '__main__':
+    with open("config.yml") as f:
+        config = yaml.load(f.read())
+    for key in ['devices']:
+        app.config[key] = config[key]
     app.run(host='0.0.0.0', port=8005)
