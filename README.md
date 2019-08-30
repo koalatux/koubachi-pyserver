@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 Running the koubachi-pyserver requires Python 3.7. On a Raspberry Pi running Raspbian Buster this comes pre-installed
 but git won't be available by default:
@@ -28,10 +28,15 @@ pipenv install
 Now you need a ```config.yml``` that contains the encryption key and calibration settings for your Koubachi sensors. This
 information can be downloaded from [Koubachi Labs](https://labs.koubachi.com).
 
-## Running ##
+# Running
 
 To launch the server, run the following command:
 ```bash
 pipenv shell
 python src/server.py
 ```
+
+# Reconfigure Sensor
+
+Read in the [API documentation](https://github.com/koubachi-sensor/api-docs#change-the-sensors-server-address)
+how to reconfigure your sensor to connect to your own server.
