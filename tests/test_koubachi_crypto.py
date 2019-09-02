@@ -1,4 +1,4 @@
-from koubachi_crypto import decrypt, encrypt
+from koubachi_pyserver.koubachi_crypto import decrypt, encrypt
 
 
 def test_decryption():

@@ -54,7 +54,7 @@ To launch the server, run the following command:
 
 ```bash
 pipenv shell
-python src/server.py
+python src/koubachi_pyserver/app.py
 ```
 
 # Reconfigure Sensor
