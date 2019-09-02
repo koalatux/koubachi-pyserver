@@ -8,7 +8,7 @@ BLOCK_SIZE = 16
 CRC_LEN = 4
 
 
-def decrypt(key, data):
+def decrypt(key: bytes, data: bytes) -> bytes:
     # check length
     if len(data) < IV_LEN + BLOCK_SIZE or (len(data) - IV_LEN) % BLOCK_SIZE != 0:
         raise ValueError("invalid data size")
@@ -30,7 +30,7 @@ def decrypt(key, data):
     return plaintext
 
 
-def encrypt(key, data):
+def encrypt(key: bytes, data: bytes) -> bytes:
     # add padding
     plaintext = data + bytes(BLOCK_SIZE - (len(data) + CRC_LEN - 1) % BLOCK_SIZE - 1)
 
