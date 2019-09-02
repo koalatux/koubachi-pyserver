@@ -1,21 +1,21 @@
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, Mapping, Optional, Tuple
 
 
-def convert_lm94022_temperature(x: float, calibration_parameters: Dict[str, float]) -> float:
+def convert_lm94022_temperature(x: float, calibration_parameters: Mapping[str, float]) -> float:
     x = (x - calibration_parameters['RN171_SMU_DC_OFFSET']) * calibration_parameters['RN171_SMU_GAIN'] * 3.0
     x = (453.512485591335 - 163.565776259726 * x - 10.5408332222805 * (x ** 2)
          - calibration_parameters['LM94022_TEMPERATURE_OFFSET'] - 273.15)
     return x
 
 
-def convert_sfh3710_light(x: float, calibration_parameters: Dict[str, float]) -> float:
+def convert_sfh3710_light(x: float, calibration_parameters: Mapping[str, float]) -> float:
     x = ((x - calibration_parameters['SFH3710_DC_OFFSET_CORRECTION'])
          * calibration_parameters['RN171_SMU_GAIN'] / 20.0 * 7.2)
     x = 3333326.67 * ((abs(x) + x) / 2)
     return x
 
 
-def convert_soil_moisture(x: float, calibration_parameters: Dict[str, float]) -> float:
+def convert_soil_moisture(x: float, calibration_parameters: Mapping[str, float]) -> float:
     x = ((x - calibration_parameters['SOIL_MOISTURE_MIN'])
          * ((8778.25 - 3515.25) / (calibration_parameters['SOIL_MOISTURE_DISCONTINUITY']
                                    - calibration_parameters['SOIL_MOISTURE_MIN'])) + 3515.25)
@@ -28,7 +28,7 @@ def convert_soil_moisture(x: float, calibration_parameters: Dict[str, float]) ->
     return max(0, min(6, x))
 
 
-def convert_tsl2561_light(x: float, _calibration_parameters: Dict[str, float]) -> float:
+def convert_tsl2561_light(x: float, _calibration_parameters: Mapping[str, float]) -> float:
     x = int(x)
     data0 = float((x >> 16) & 0xfffe)
     data1 = float(x & 0xfffe)
@@ -55,7 +55,7 @@ def convert_tsl2561_light(x: float, _calibration_parameters: Dict[str, float]) -
 
 # We are configuring all sensors, the device will ignore unavailable sensors
 # Sensor Type ID: (type, enabled, polling interval, conversion function)
-SENSORS: Dict[int, Tuple[str, bool, Optional[int], Optional[Callable[[float, Dict[str, float]], float]]]] = {
+SENSORS: Dict[int, Tuple[str, bool, Optional[int], Optional[Callable[[float, Mapping[str, float]], float]]]] = {
     1: ("board_temperature", False, 3600, lambda x, _: x),
     2: ("battery_voltage", True, 86400, lambda x, _: x),
     6: ("button", True, None, lambda x, _: x / 1000),

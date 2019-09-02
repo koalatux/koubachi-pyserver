@@ -2,7 +2,7 @@
 
 import time
 import json
-from typing import Dict, Iterable, Tuple
+from typing import Iterable, Mapping, Tuple
 from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
@@ -23,7 +23,7 @@ def get_device_key(mac_address: str) -> bytes:
     return bytes.fromhex(app.config['devices'][mac_address]['key'])
 
 
-def get_device_calibration_parameters(mac_address: str) -> Dict[str, float]:
+def get_device_calibration_parameters(mac_address: str) -> Mapping[str, float]:
     return app.config['devices'][mac_address]['calibration_parameters']
 
 
@@ -44,7 +44,7 @@ def get_device_last_config_change(_mac_address: str) -> int:
     return 1565643961
 
 
-def post_readings(mac_address: str, body: Dict[str, Iterable[Tuple[int, int, float]]]) -> None:
+def post_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, int, float]]]) -> None:
     calibration_parameters = get_device_calibration_parameters(mac_address)
     readings = []
     for reading in body['readings']:
