@@ -53,8 +53,7 @@ downloaded from [Koubachi Labs](https://labs.koubachi.com).
 To launch the server, run the following command:
 
 ```bash
-pipenv shell
-python src/koubachi_pyserver/app.py
+pipenv run python -m koubachi_pyserver.app
 ```
 
 # Reconfigure Sensor
