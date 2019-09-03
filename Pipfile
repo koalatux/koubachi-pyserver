@@ -3,7 +3,8 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
+[requires]
+python_version = "3.7"
 
 [packages]
 flask = "*"
@@ -11,5 +12,6 @@ pyyaml = "*"
 paho-mqtt = "*"
 pycrypto = "*"
 
-[requires]
-python_version = "3.7"
+[dev-packages]
+mypy = "*"
+pytest = "*"

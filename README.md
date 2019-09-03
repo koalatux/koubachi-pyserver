@@ -61,3 +61,25 @@ pipenv run python -m koubachi_pyserver.app
 Read in the [API
 documentation](https://github.com/koubachi-sensor/api-docs#change-the-sensors-server-address)
 how to reconfigure your sensor to connect to your own server.
+
+# Development
+
+Install development dependencies:
+
+```bash
+pipenv install --dev
+```
+
+## Static Type Checking and Tests
+
+Perform static type checking:
+
+```bash
+pipenv run mypy --strict src
+```
+
+Run tests:
+
+```bash
+pipenv run pytest
+```
