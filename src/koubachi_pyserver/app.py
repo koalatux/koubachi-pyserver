@@ -7,9 +7,8 @@ from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
 import paho.mqtt.publish as publish
-from koubachi_crypto import decrypt, encrypt
-
-from sensors import SENSORS
+from koubachi_pyserver.crypto import decrypt, encrypt
+from koubachi_pyserver.sensors import SENSORS
 
 # The sensor only accepts HTTP/1.1
 BaseHTTPRequestHandler.protocol_version = 'HTTP/1.1'
