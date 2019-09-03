@@ -101,7 +101,7 @@ def add_readings(mac_address: str) -> Response:
 
 if __name__ == '__main__':
     with open("config.yml") as f:
-        config = yaml.load(f.read())
+        config = yaml.safe_load(f.read())
     for device in ['devices']:
         app.config[device] = config[device]
     app.run(host='0.0.0.0', port=8005)
