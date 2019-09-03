@@ -23,7 +23,9 @@ def get_device_key(mac_address: str) -> bytes:
 
 
 def get_device_calibration_parameters(mac_address: str) -> Mapping[str, float]:
-    return app.config['devices'][mac_address]['calibration_parameters']
+    calibration_parameters = app.config['devices'][mac_address]['calibration_parameters']
+    assert isinstance(calibration_parameters, dict)
+    return calibration_parameters
 
 
 def get_device_config(_mac_address: str) -> str:
