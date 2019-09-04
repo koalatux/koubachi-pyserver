@@ -48,6 +48,12 @@ Now you need a `config.yml` that contains the encryption key and
 calibration settings for your Koubachi Sensors. This information can be
 downloaded from [Koubachi Labs](https://labs.koubachi.com).
 
+# Configuration
+
+Configuration is work in progress. Please refer to the [issues
+page](https://github.com/koalatux/koubachi-pyserver/issues) if you would
+like to help contributing.
+
 # Running
 
 To launch the server, run the following command:
