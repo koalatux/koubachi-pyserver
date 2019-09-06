@@ -3,7 +3,7 @@
 import os
 import time
 import json
-from typing import Dict, Iterable, List, Mapping, NamedTuple, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, NamedTuple, Optional, Tuple, Union
 from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
@@ -77,13 +77,24 @@ def convert_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, in
 
 
 def handle_readings(mac_address: str, readings: Iterable[Reading]) -> None:
-    if app.config['output']['type'] == 'csv_files':
-        write_to_csv(app.config['output']['directory'], mac_address, readings)
+    output: Dict[str, str] = app.config['output']
+    if output['type'] == 'csv_files':
+        write_to_csv(mac_address, readings, directory=output['directory'])
+    elif output['type'] == 'thingsboard_mqtt':
+        cfg: Dict[str, Union[str, Dict[str, str]]] = {k: v for k, v in output.items() if k in ['topic', 'hostname']}
+        username = output.get('username', None)
+        if username is not None:
+            auth = {'username': username}
+            password = output.get('password', None)
+            if password is not None:
+                auth['password'] = password
+            cfg['auth'] = auth
+        post_to_thingsboard_mqtt(mac_address, readings, **cfg)
     else:
         NotImplementedError("Output type not implemented.")
 
 
-def write_to_csv(directory: str, mac_address: str, readings: Iterable[Reading]) -> None:
+def write_to_csv(mac_address: str, readings: Iterable[Reading], directory: str) -> None:
     grouped_readings: Dict[str, List[Reading]] = {}
     for reading in readings:
         grouped_readings.setdefault(reading.sensor_type, []).append(reading)
@@ -92,17 +103,18 @@ def write_to_csv(directory: str, mac_address: str, readings: Iterable[Reading]) 
             file.writelines([f"{reading.timestamp},{reading.value},{reading.raw_value}\r\n" for reading in rdngs])
 
 
-# TODO
-def mqtt_post_readings(mac_address: str, readings: Iterable[Reading]) -> None:
+def post_to_thingsboard_mqtt(mac_address: str, readings: Iterable[Reading],
+                             **kwargs: Union[str, Mapping[str, str]]) -> None:
     if readings:
-        thingsboard_readings = [{
-            'ts': reading.timestamp * 1000,
-            'values': {
-                reading.sensor_type: reading.value
-            }
-        } for reading in readings]
-        payload = {mac_address: thingsboard_readings}
-        # publish.single(app.config.MQTT_TOPIC, json.dumps(payload), hostname=app.config.MQTT_HOST, auth=app.config.MQTT_AUTH)
+        thingsboard_payload = {
+            mac_address: [{
+                'ts': reading.timestamp * 1000,
+                'values': {
+                    reading.sensor_type: reading.value
+                }
+            } for reading in readings]
+        }
+        publish.single(payload=json.dumps(thingsboard_payload), **kwargs)
 
 
 @app.route('/v1/smart_devices/<mac_address>', methods=['PUT'])
