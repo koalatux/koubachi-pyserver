@@ -24,6 +24,13 @@ class RawReading(NamedTuple):
     raw_value: Union[int, float]
 
 
+class Reading(NamedTuple):
+    timestamp: int
+    sensor_type: str
+    value: float
+    raw_value: Union[int, float]
+
+
 def get_device_key(mac_address: str) -> bytes:
     return bytes.fromhex(app.config['devices'][mac_address]['key'])
 
@@ -51,26 +58,32 @@ def get_device_last_config_change(_mac_address: str) -> int:
     return 1565643961
 
 
-def post_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, int, float]]]) -> None:
+def convert_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, int, float]]]) -> Iterable[Reading]:
     calibration_parameters = get_device_calibration_parameters(mac_address)
     readings = []
     for rdng in body['readings']:
         raw_reading = RawReading(*rdng)
         sensor = SENSORS.get(raw_reading.sensor_type_id, Sensor('', False, None, None))
-        if sensor.enabled:
-            if sensor.conversion_func is None:
-                value = None
-            else:
-                value = sensor.conversion_func(raw_reading.raw_value, calibration_parameters)
-            readings.append({
-                'ts': raw_reading.timestamp * 1000,
-                'values': {
-                    sensor[0] + '_raw': raw_reading.raw_value,
-                    sensor[0]: value
-                }
-            })
+        if not sensor.enabled or sensor.conversion_func is None:
+            continue
+        readings.append(Reading(
+            raw_reading.timestamp,
+            sensor.type,
+            sensor.conversion_func(raw_reading.raw_value, calibration_parameters),
+            raw_reading.raw_value,
+        ))
+    return readings
+
+
+def post_readings(mac_address: str, readings: Iterable[Reading]) -> None:
     if readings:
-        payload = {mac_address: readings}
+        thingsboard_readings = [{
+            'ts': reading.timestamp * 1000,
+            'values': {
+                reading.sensor_type: reading.value
+            }
+        } for reading in readings]
+        payload = {mac_address: thingsboard_readings}
         # TODO
         print(payload)
         # publish.single(app.config.MQTT_TOPIC, json.dumps(payload), hostname=app.config.MQTT_HOST, auth=app.config.MQTT_AUTH)
@@ -99,7 +112,8 @@ def add_readings(mac_address: str) -> Response:
     key = get_device_key(mac_address)
     body = decrypt(key, request.get_data())
     body_parsed = json.loads(body.replace(b"'", b'"'))
-    post_readings(mac_address, body_parsed)
+    readings = convert_readings(mac_address, body_parsed)
+    post_readings(mac_address, readings)
     response = f"current_time={int(time.time())}&last_config_change={get_device_last_config_change(mac_address)}"
     response_enc = encrypt(key, bytes(response, encoding='utf-8'))
     return Response(response_enc, status=201, content_type=CONTENT_TYPE)
