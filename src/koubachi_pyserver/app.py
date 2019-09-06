@@ -11,6 +11,8 @@ import paho.mqtt.publish as publish
 from koubachi_pyserver.crypto import decrypt, encrypt
 from koubachi_pyserver.sensors import Sensor, SENSORS
 
+CONFIG_FILE = "config.yml"
+
 # The sensor only accepts HTTP/1.1
 BaseHTTPRequestHandler.protocol_version = 'HTTP/1.1'
 
@@ -55,8 +57,7 @@ def get_device_config(_mac_address: str) -> str:
 
 
 def get_device_last_config_change(_mac_address: str) -> int:
-    # TODO
-    return 1565643961
+    return int(app.config['last_config_change'])
 
 
 def convert_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, int, float]]]) -> Iterable[Reading]:
@@ -146,9 +147,14 @@ def add_readings(mac_address: str) -> Response:
     return Response(response_enc, status=201, content_type=CONTENT_TYPE)
 
 
-if __name__ == '__main__':
-    with open("config.yml") as f:
+def main() -> None:
+    app.config['last_config_change'] = os.path.getmtime(CONFIG_FILE)
+    with open(CONFIG_FILE) as f:
         config = yaml.safe_load(f.read())
-    for device in ['output', 'devices']:
-        app.config[device] = config[device]
+    for cfg in ['output', 'devices']:
+        app.config[cfg] = config[cfg]
     app.run(host='0.0.0.0', port=8005)
+
+
+if __name__ == '__main__':
+    main()
