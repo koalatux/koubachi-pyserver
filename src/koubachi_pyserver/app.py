@@ -2,13 +2,13 @@
 
 import time
 import json
-from typing import Iterable, Mapping, Tuple
+from typing import Iterable, Mapping, NamedTuple, Tuple, Union
 from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
 import paho.mqtt.publish as publish
 from koubachi_pyserver.crypto import decrypt, encrypt
-from koubachi_pyserver.sensors import SENSORS
+from koubachi_pyserver.sensors import Sensor, SENSORS
 
 # The sensor only accepts HTTP/1.1
 BaseHTTPRequestHandler.protocol_version = 'HTTP/1.1'
@@ -16,6 +16,12 @@ BaseHTTPRequestHandler.protocol_version = 'HTTP/1.1'
 CONTENT_TYPE = "application/x-koubachi-aes-encrypted"
 
 app = Flask(__name__)
+
+
+class RawReading(NamedTuple):
+    timestamp: int
+    sensor_type_id: int
+    raw_value: Union[int, float]
 
 
 def get_device_key(mac_address: str) -> bytes:
@@ -48,19 +54,19 @@ def get_device_last_config_change(_mac_address: str) -> int:
 def post_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, int, float]]]) -> None:
     calibration_parameters = get_device_calibration_parameters(mac_address)
     readings = []
-    for reading in body['readings']:
-        ts, sensor_type_id, value_raw = reading
-        sensor_type = SENSORS.get(sensor_type_id, ('', False, None, None))
-        if sensor_type[1]:
-            if sensor_type[3] is None:
+    for rdng in body['readings']:
+        raw_reading = RawReading(*rdng)
+        sensor = SENSORS.get(raw_reading.sensor_type_id, Sensor('', False, None, None))
+        if sensor.enabled:
+            if sensor.conversion_func is None:
                 value = None
             else:
-                value = sensor_type[3](value_raw, calibration_parameters)
+                value = sensor.conversion_func(raw_reading.raw_value, calibration_parameters)
             readings.append({
-                'ts': ts * 1000,
+                'ts': raw_reading.timestamp * 1000,
                 'values': {
-                    sensor_type[0] + '_raw': value_raw,
-                    sensor_type[0]: value
+                    sensor[0] + '_raw': raw_reading.raw_value,
+                    sensor[0]: value
                 }
             })
     if readings:

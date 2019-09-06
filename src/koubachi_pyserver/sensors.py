@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Mapping, Optional, Tuple, Union
+from typing import Callable, Dict, Mapping, NamedTuple, Optional, Union
 
 
 def convert_lm94022_temperature(x: Union[int, float], calibration_parameters: Mapping[str, float]) -> float:
@@ -53,33 +53,37 @@ def convert_tsl2561_light(x: Union[int, float], _calibration_parameters: Mapping
     return y * 5.0
 
 
+class Sensor(NamedTuple):
+    type: str
+    enabled: bool
+    polling_interval: Optional[int]
+    conversion_func: Optional[Callable[[Union[int, float], Mapping[str, float]], float]]
+
+
 # We are configuring all sensors, the device will ignore unavailable sensors
-# Sensor Type ID: (type, enabled, polling interval, conversion function)
-SENSORS: Dict[
-    int, Tuple[str, bool, Optional[int], Optional[Callable[[Union[int, float], Mapping[str, float]], float]]]
-] = {
-    1: ("board_temperature", False, 3600, lambda x, _: x),
-    2: ("battery_voltage", True, 86400, lambda x, _: x),
-    6: ("button", True, None, lambda x, _: x / 1000),
-    7: ("temperature", True, 3600, convert_lm94022_temperature),
-    8: ("light", True, 3600, convert_sfh3710_light),
-    9: ("rssi", True, None, lambda x, _: x),
-    10: ("soil_sensors_trigger", True, 18000, None),
-    11: ("soil_temperature", True, None, lambda x, _: x - 2.5),
-    12: ("soil_moisture", True, None, convert_soil_moisture),
-    15: ("temperature", True, 3600, lambda x, _: -46.85 + 175.72 * x / 2 ** 16),
-    29: ("light", True, 3600, convert_tsl2561_light),
+SENSORS: Dict[int, Sensor] = {
+    1: Sensor("board_temperature", False, 3600, lambda x, _: x),
+    2: Sensor("battery_voltage", True, 86400, lambda x, _: x),
+    6: Sensor("button", True, None, lambda x, _: x / 1000),
+    7: Sensor("temperature", True, 3600, convert_lm94022_temperature),
+    8: Sensor("light", True, 3600, convert_sfh3710_light),
+    9: Sensor("rssi", True, None, lambda x, _: x),
+    10: Sensor("soil_sensors_trigger", True, 18000, None),
+    11: Sensor("soil_temperature", True, None, lambda x, _: x - 2.5),
+    12: Sensor("soil_moisture", True, None, convert_soil_moisture),
+    15: Sensor("temperature", True, 3600, lambda x, _: -46.85 + 175.72 * x / 2 ** 16),
+    29: Sensor("light", True, 3600, convert_tsl2561_light),
     # statistics
-    4096: ("", False, None, None),
-    4112: ("", False, None, None),
-    4113: ("", False, None, None),
-    4114: ("", False, None, None),
-    4115: ("", False, None, None),
-    4116: ("", False, None, None),
-    4128: ("", False, None, None),
+    4096: Sensor("", False, None, None),
+    4112: Sensor("", False, None, None),
+    4113: Sensor("", False, None, None),
+    4114: Sensor("", False, None, None),
+    4115: Sensor("", False, None, None),
+    4116: Sensor("", False, None, None),
+    4128: Sensor("", False, None, None),
     # errors
-    8192: ("", False, None, None),
-    8193: ("", False, None, None),
-    8194: ("", False, None, None),
-    8195: ("", False, None, None),
+    8192: Sensor("", False, None, None),
+    8193: Sensor("", False, None, None),
+    8194: Sensor("", False, None, None),
+    8195: Sensor("", False, None, None),
 }
