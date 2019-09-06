@@ -3,7 +3,7 @@
 import os
 import time
 import json
-from typing import Dict, Iterable, List, Mapping, NamedTuple, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, NamedTuple, Tuple, Union
 from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
