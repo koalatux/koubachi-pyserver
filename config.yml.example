@@ -1,3 +1,6 @@
+output:
+  type: csv_files
+  directory: "/tmp/koubachi_sensor_readings"
 devices:
   001122334455:
     key: 00112233445566778899aabbccddeeff

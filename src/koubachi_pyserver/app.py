@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
+import os
 import time
 import json
-from typing import Iterable, Mapping, NamedTuple, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, NamedTuple, Tuple, Union
 from http.server import BaseHTTPRequestHandler
 import yaml
 from flask import Flask, request, Response
@@ -75,7 +76,24 @@ def convert_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, in
     return readings
 
 
-def post_readings(mac_address: str, readings: Iterable[Reading]) -> None:
+def handle_readings(mac_address: str, readings: Iterable[Reading]) -> None:
+    if app.config['output']['type'] == 'csv_files':
+        write_to_csv(app.config['output']['directory'], mac_address, readings)
+    else:
+        NotImplementedError("Output type not implemented.")
+
+
+def write_to_csv(directory: str, mac_address: str, readings: Iterable[Reading]) -> None:
+    grouped_readings: Dict[str, List[Reading]] = {}
+    for reading in readings:
+        grouped_readings.setdefault(reading.sensor_type, []).append(reading)
+    for sensor_type, rdngs in grouped_readings.items():
+        with open(os.path.join(directory, f"{mac_address}_{sensor_type}.csv"), 'a') as file:
+            file.writelines([f"{reading.timestamp},{reading.value},{reading.raw_value}\r\n" for reading in rdngs])
+
+
+# TODO
+def mqtt_post_readings(mac_address: str, readings: Iterable[Reading]) -> None:
     if readings:
         thingsboard_readings = [{
             'ts': reading.timestamp * 1000,
@@ -84,8 +102,6 @@ def post_readings(mac_address: str, readings: Iterable[Reading]) -> None:
             }
         } for reading in readings]
         payload = {mac_address: thingsboard_readings}
-        # TODO
-        print(payload)
         # publish.single(app.config.MQTT_TOPIC, json.dumps(payload), hostname=app.config.MQTT_HOST, auth=app.config.MQTT_AUTH)
 
 
@@ -112,8 +128,7 @@ def add_readings(mac_address: str) -> Response:
     key = get_device_key(mac_address)
     body = decrypt(key, request.get_data())
     body_parsed = json.loads(body.replace(b"'", b'"'))
-    readings = convert_readings(mac_address, body_parsed)
-    post_readings(mac_address, readings)
+    handle_readings(mac_address, convert_readings(mac_address, body_parsed))
     response = f"current_time={int(time.time())}&last_config_change={get_device_last_config_change(mac_address)}"
     response_enc = encrypt(key, bytes(response, encoding='utf-8'))
     return Response(response_enc, status=201, content_type=CONTENT_TYPE)
@@ -122,6 +137,6 @@ def add_readings(mac_address: str) -> Response:
 if __name__ == '__main__':
     with open("config.yml") as f:
         config = yaml.safe_load(f.read())
-    for device in ['devices']:
+    for device in ['output', 'devices']:
         app.config[device] = config[device]
     app.run(host='0.0.0.0', port=8005)
