@@ -100,8 +100,15 @@ def write_to_csv(mac_address: str, readings: Iterable[Reading], directory: str) 
     for reading in readings:
         grouped_readings.setdefault(reading.sensor_type, []).append(reading)
     for sensor_type, rdngs in grouped_readings.items():
-        with open(os.path.join(directory, f"{mac_address}_{sensor_type}.csv"), 'a') as file:
-            file.writelines([f"{reading.timestamp},{reading.value},{reading.raw_value}\r\n" for reading in rdngs])
+        file_path = os.path.join(directory, f"{mac_address}_{sensor_type}.csv")
+        try:
+            with open(file_path, 'x') as file:
+                # create file and write header line
+                file.write(f"timestamp,{sensor_type},raw_value\r\n")
+        except FileExistsError:
+            pass
+        with open(file_path, 'a') as file:
+            file.writelines([f"{reading1.timestamp},{reading1.value},{reading1.raw_value}\r\n" for reading1 in rdngs])
 
 
 def post_to_thingsboard_mqtt(mac_address: str, readings: Iterable[Reading],
