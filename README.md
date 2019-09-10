@@ -12,6 +12,33 @@ shut down.
 
 # Installation
 
+## Using Dependencies from Debian
+
+koubachi-pyserver can be run using only dependencies available in
+Debian buster. Run the following commands to install all the required
+packages and clone the repository:
+
+### Installing
+
+```bash
+sudo apt install git python3 python3-yaml python3-flask python3-paho-mqtt python3-crypto
+git clone https://github.com/koalatux/koubachi-pyserver.git
+cd koubachi-pyserver
+```
+
+### Running
+
+First read about configuration below, then to launch the server, run the
+following command:
+
+```bash
+PYTHONPATH=$PYTHONPATH:src python3 -m koubachi_pyserver.app
+```
+
+## Using Pipenv
+
+### Installing
+
 Running the koubachi-pyserver requires Python 3.7. On a Raspberry Pi
 running Raspbian Buster this comes pre-installed but git won't be
 available by default:
@@ -20,17 +47,17 @@ available by default:
 sudo apt install git
 ```
 
-koubachi-pyserver uses `pipenv` for dependency management and virtual
+koubachi-pyserver can use `pipenv` for dependency management and virtual
 environments. Make sure that `pip` and  `pipenv` are installed. Note:
 the following does a user installation to prevent breaking any
 system-wide packages. If pipenv isn't available in your shell after
 installation, you’ll need to add the user base's binary directory to
-your PATH
+your PATH:
 
 ```bash
 sudo apt install python3-pip
 pip3 install -U pipenv
-export PATH=$PATH:$HOME/.local/bin
+PATH=$PATH:$HOME/.local/bin
 ```
  
 Download the [latest
@@ -40,33 +67,34 @@ environment with `pipenv` and install all project dependencies:
 
 ```bash
 git clone https://github.com/koalatux/koubachi-pyserver.git
-cd koubachi-pyserver/
+cd koubachi-pyserver
 pipenv install
 ```
 
-Now you need a `config.yml` that contains the encryption key and
-calibration settings for your Koubachi Sensors. This information can be
-downloaded from [Koubachi Labs](https://labs.koubachi.com).
+### Running
 
-# Configuration
-
-Configuration is work in progress. Please refer to the [issues
-page](https://github.com/koalatux/koubachi-pyserver/issues) if you would
-like to help contributing.
-
-# Running
-
-To launch the server, run the following command:
+First read about configuration below, then to launch the server, run the
+following command:
 
 ```bash
 pipenv run python -m koubachi_pyserver.app
 ```
 
-# Reconfigure Sensor
+# Configuration
+
+Now you need a `config.yml` that contains the encryption key and
+calibration settings for your Koubachi Sensors. This information can be
+downloaded from [Koubachi Labs](https://labs.koubachi.com).
+
+Configuration is work in progress. Please refer to the [issues
+page](https://github.com/koalatux/koubachi-pyserver/issues) if you would
+like to help contributing.
+
+# Reconfiguring the Koubachi Sensor
 
 Read in the [API
 documentation](https://github.com/koubachi-sensor/api-docs#change-the-sensors-server-address)
-how to reconfigure your sensor to connect to your own server.
+how to reconfigure your Koubachi sensor to connect to your own server.
 
 # Development
 
