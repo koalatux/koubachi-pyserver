@@ -1,7 +1,8 @@
 import os
 import struct
 from zlib import crc32
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 IV_LEN = 16
 BLOCK_SIZE = 16
@@ -15,8 +16,8 @@ def decrypt(key: bytes, data: bytes) -> bytes:
     iv, ciphertext = data[:IV_LEN], data[IV_LEN:]
 
     # decrypt
-    decrypter = AES.new(key, AES.MODE_CBC, iv)
-    plaintext = decrypter.decrypt(ciphertext)
+    decrypter = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).decryptor()
+    plaintext = decrypter.update(ciphertext) + decrypter.finalize()
 
     # check crc
     plaintext, crc = plaintext[:-CRC_LEN], plaintext[-CRC_LEN:]
@@ -41,7 +42,7 @@ def encrypt(key: bytes, data: bytes) -> bytes:
     iv = os.urandom(IV_LEN)
 
     # encrypt
-    encrypter = AES.new(key, AES.MODE_CBC, iv)
-    ciphertext = encrypter.encrypt(plaintext)
+    encrypter = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).encryptor()
+    ciphertext = encrypter.update(plaintext) + encrypter.finalize()
 
     return iv + ciphertext

@@ -10,7 +10,7 @@ python_version = "3.7"
 flask = "*"
 pyyaml = "*"
 paho-mqtt = "*"
-pycrypto = "*"
+cryptography = "*"
 
 [dev-packages]
 mypy = "*"

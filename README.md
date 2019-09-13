@@ -21,7 +21,7 @@ packages and clone the repository:
 ### Installing
 
 ```bash
-sudo apt install git python3 python3-yaml python3-flask python3-paho-mqtt python3-crypto
+sudo apt install git python3 python3-yaml python3-flask python3-paho-mqtt python3-cryptography
 git clone https://github.com/koalatux/koubachi-pyserver.git
 cd koubachi-pyserver
 ```
