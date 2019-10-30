@@ -3,7 +3,7 @@
 The Koubachi Sensor is a small battery powered device, that measures
 soil moisture, light intensity and temperature, measurements are then
 transmitted via W-LAN to a server. Koubachi Sensors were sold until 2015
-and the original Koubachi servers are about to be retired soon.
+and the original Koubachi servers retired in October 2019.
 
 This project aims to replace the original Koubachi server with a bridge,
 that forwards measurements to a custom MQTT or REST end point, such that
