@@ -82,9 +82,11 @@ pipenv run python -m koubachi_pyserver.app
 
 # Configuration
 
-Now you need a `config.yml` that contains the encryption key and
-calibration settings for your Koubachi Sensors. This information can be
-downloaded from [Koubachi Labs](https://labs.koubachi.com).
+Now you need a `config.yml` that contains the encryption keys and
+calibration data for your Koubachi Sensors. Write an e-mail to
+[sensors@koubachi.com](mailto:sensors@koubachi.com) and mention the MAC
+addresses of your Koubachi Sensors. Within a few days someone will reply
+with the required data.
 
 Configuration is work in progress. Please refer to the [issues
 page](https://github.com/koalatux/koubachi-pyserver/issues) if you would
