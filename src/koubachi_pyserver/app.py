@@ -91,6 +91,17 @@ def handle_readings(mac_address: str, readings: Iterable[Reading]) -> None:
                 auth['password'] = password
             cfg['auth'] = auth
         post_to_thingsboard_mqtt(mac_address, readings, **cfg)
+    elif output['type'] == 'latestvals_mqtt':
+        cfg: Dict[str, Union[str, Dict[str, str]]] = {k: v for k, v in output.items() if k in ['topic', 'hostname']}
+        cfg['topic'] += '/' + mac_address
+        username = output.get('username', None)
+        if username is not None:
+            auth = {'username': username}
+            password = output.get('password', None)
+            if password is not None:
+                auth['password'] = password
+            cfg['auth'] = auth
+        post_to_latestvals_mqtt(readings, **cfg)
     else:
         NotImplementedError("Output type not implemented.")
 
@@ -123,6 +134,16 @@ def post_to_thingsboard_mqtt(mac_address: str, readings: Iterable[Reading],
             } for reading in readings]
         }
         publish.single(payload=json.dumps(thingsboard_payload), **kwargs)
+
+
+def post_to_latestvals_mqtt(readings: Iterable[Reading],
+                            **kwargs: Union[str, Mapping[str, str]]) -> None:
+    if readings:
+        mqtt_payload = dict()
+        # assuming readings as sorted by time, so new values overwrite old ones
+        for reading in readings:
+            mqtt_payload[reading.sensor_type] = reading.value
+        publish.single(payload=json.dumps(mqtt_payload), **kwargs)
 
 
 @app.route('/v1/smart_devices/<mac_address>', methods=['PUT'])
