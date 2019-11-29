@@ -77,30 +77,29 @@ def convert_readings(mac_address: str, body: Mapping[str, Iterable[Tuple[int, in
     return readings
 
 
+def get_mqtt_config(output: Dict[str, str]) -> Dict[str, Union[str, Dict[str, str]]]:
+    cfg: Dict[str, Union[str, Dict[str, str]]] = {k: v for k, v in output.items() if k in ['topic', 'hostname']}
+    username = output.get('username', None)
+    if username is not None:
+        auth = {'username': username}
+        password = output.get('password', None)
+        if password is not None:
+            auth['password'] = password
+        cfg['auth'] = auth
+    return cfg
+
+
 def handle_readings(mac_address: str, readings: Iterable[Reading]) -> None:
     output: Dict[str, str] = app.config['output']
     if output['type'] == 'csv_files':
         write_to_csv(mac_address, readings, directory=output['directory'])
     elif output['type'] == 'thingsboard_mqtt':
-        cfg: Dict[str, Union[str, Dict[str, str]]] = {k: v for k, v in output.items() if k in ['topic', 'hostname']}
-        username = output.get('username', None)
-        if username is not None:
-            auth = {'username': username}
-            password = output.get('password', None)
-            if password is not None:
-                auth['password'] = password
-            cfg['auth'] = auth
+        cfg = get_mqtt_config(output)
         post_to_thingsboard_mqtt(mac_address, readings, **cfg)
     elif output['type'] == 'latestvals_mqtt':
-        cfg: Dict[str, Union[str, Dict[str, str]]] = {k: v for k, v in output.items() if k in ['topic', 'hostname']}
+        cfg = get_mqtt_config(output)
+        assert isinstance(cfg['topic'], str)
         cfg['topic'] += '/' + mac_address
-        username = output.get('username', None)
-        if username is not None:
-            auth = {'username': username}
-            password = output.get('password', None)
-            if password is not None:
-                auth['password'] = password
-            cfg['auth'] = auth
         post_to_latestvals_mqtt(readings, **cfg)
     else:
         NotImplementedError("Output type not implemented.")
