@@ -145,6 +145,11 @@ def post_to_latestvals_mqtt(readings: Iterable[Reading],
         publish.single(payload=json.dumps(mqtt_payload), **kwargs)
 
 
+@app.route('/')
+def index() -> Response:
+    return Response("OK\n", content_type="text/plain")
+
+
 @app.route('/v1/smart_devices/<mac_address>', methods=['PUT'])
 def connect(mac_address: str) -> Response:
     key = get_device_key(mac_address)
