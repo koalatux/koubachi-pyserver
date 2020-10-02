@@ -1,18 +1,19 @@
 #!/usr/bin/python3
 
 import os
+import pickle
 import re
 import sys
 
 import yaml
 
-CONFIG_FILE_IN = "config_all.yml"
+CONFIG_FILE_IN = "config_all.pickle"
 CONFIG_FILE_OUT = "config_custom.yml"
 
 print(f"Loading devices from \"{CONFIG_FILE_IN}\" ...")
 
-with open(CONFIG_FILE_IN) as f:
-    config_in = yaml.safe_load(f.read())
+with open(CONFIG_FILE_IN, "rb") as f:
+    config_in = pickle.load(f)
 
 print(f"Loaded {len(config_in['devices'])} devices.")
 if os.isatty(sys.stdin.fileno()):
