@@ -101,6 +101,11 @@ def handle_readings(mac_address: str, readings: Iterable[Reading]) -> None:
         assert isinstance(cfg['topic'], str)
         cfg['topic'] += '/' + mac_address
         post_to_latestvals_mqtt(readings, **cfg)
+    elif output['type'] == 'mqtt_individual':
+        cfg = get_mqtt_config(output)
+        assert isinstance(cfg['topic'], str)
+        cfg['topic'] += '/' + mac_address
+        post_to_mqtt_individual(readings, **cfg)
     else:
         NotImplementedError("Output type not implemented.")
 
@@ -143,6 +148,18 @@ def post_to_latestvals_mqtt(readings: Iterable[Reading],
         for reading in readings:
             mqtt_payload[reading.sensor_type] = reading.value
         publish.single(payload=json.dumps(mqtt_payload), **kwargs)
+
+def post_to_mqtt_individual(readings: Iterable[Reading],
+                            **kwargs: Union[str, Mapping[str, str]]) -> None:
+    if readings:
+        base_topic = kwargs['topic']
+        sensor_values = dict()
+        # assuming readings as sorted by time, so new values overwrite old ones
+        for reading in readings:
+            sensor_values[reading.sensor_type] = reading.value
+        for sensor_type, value in sensor_values.items():
+            kwargs['topic'] = base_topic + "/sensor/" + sensor_type
+            publish.single(payload=value, **kwargs)
 
 
 @app.route('/')
